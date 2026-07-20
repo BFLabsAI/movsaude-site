@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, MapPin, Play } from 'lucide-react'
 import { projects } from '@/data/projects'
@@ -38,6 +39,16 @@ const med = projects[0]
 const others = projects.slice(1)
 
 export function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  function playVideo() {
+    const el = videoRef.current
+    if (!el) return
+    void el.play().catch(() => {
+      // se o browser bloquear autoplay, o usuário ainda tem os controls
+    })
+  }
+
   return (
     <div className="overflow-x-hidden bg-white">
       {/* ═══ HERO ═══ */}
@@ -286,13 +297,14 @@ export function Home() {
                   <li className="flex gap-2"><span className="text-brand-blue-soft">→</span> Equipes e acolhimento</li>
                   <li className="flex gap-2"><span className="text-brand-blue-soft">→</span> Gestores e população</li>
                 </ul>
-                <a
-                  href="#video-movsaude"
-                  className="inline-flex items-center gap-2 h-12 px-6 rounded-full bg-white text-navy font-bold text-[14px] cursor-pointer no-underline"
+                <button
+                  type="button"
+                  onClick={playVideo}
+                  className="inline-flex items-center gap-2 h-12 px-6 rounded-full bg-white text-navy font-bold text-[14px] cursor-pointer border-0"
                 >
                   <Play className="w-4 h-4 fill-navy" />
                   Assistir vídeo
-                </a>
+                </button>
               </div>
 
               {/* player vertical / adaptável */}
@@ -302,6 +314,7 @@ export function Home() {
               >
                 <div className="relative w-full rounded-[22px] overflow-hidden bg-black aspect-[9/16]">
                   <video
+                    ref={videoRef}
                     className="absolute inset-0 w-full h-full object-cover"
                     controls
                     playsInline
