@@ -306,7 +306,7 @@ export function Home() {
                     controls
                     playsInline
                     preload="metadata"
-                    poster="/unidade-movel.png"
+                    poster="/video-thumb.png"
                   >
                     <source src="/videos/mov-saude.mp4" type="video/mp4" />
                     Seu navegador não suporta vídeo HTML5.
