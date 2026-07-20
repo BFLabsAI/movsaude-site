@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+
+  --color-navy: #0e1a33;
+  --color-navy-deep: #08101f;
+  --color-navy-mid: #1a2d55;
+  --color-ink: #0e1a33;
+  --color-muted: #5c6b80;
+  --color-soft: #f4f6f9;
+  --color-line: rgba(14, 26, 51, 0.08);
+  --color-brand-blue: #2d9cdb;
+  --color-brand-blue-soft: #5eb8e8;
+  --color-brand-green: #5cb83a;
+
+  --color-med: #1b4da1;
+  --color-med-mid: #2563b8;
+  --color-cuida: #c2187e;
+  --color-cuida-mid: #e255a5;
+  --color-oftal: #137a96;
+  --color-oftal-mid: #1b9ab8;
+  --color-sorriso: #1e3a5f;
+  --color-sorriso-accent: #3ec6c0;
+  --color-vet: #2f7d32;
+  --color-vet-mid: #5ca345;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-brand-blue) 28%, transparent);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+
+  /* Mesh / atmosphere */
+  .mesh-navy {
+    background:
+      radial-gradient(ellipse 80% 60% at 70% -10%, #2d5a9a55 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 0% 100%, #5cb83a18 0%, transparent 50%),
+      linear-gradient(165deg, #0e1a33 0%, #08101f 55%, #0a1528 100%);
+  }
+
+  .noise::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+}
+
+/* ─── Mobility band: CSS FORA do @layer (não depende de Framer / Tailwind purge) ─── */
+@keyframes movsaude-drive {
+  0% {
+    left: -240px;
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-2px);
+  }
+  100% {
+    left: calc(100% + 40px);
+    transform: translateY(0);
+  }
+}
+
+@keyframes movsaude-road {
+  from { transform: translateX(0); }
+  to { transform: translateX(-33.333%); }
+}
+
+@keyframes movsaude-wheel {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes movsaude-ping {
+  0% { transform: scale(1); opacity: 0.55; }
+  75% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes movsaude-headlight {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.mov-bus {
+  left: -240px;
+  animation: movsaude-drive 8s linear infinite;
+  will-change: left, transform;
+}
+
+.mov-road-dashes {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #5cb83a 0 26px,
+    transparent 26px 50px
+  );
+  animation: movsaude-road 0.5s linear infinite;
+}
+
+.mov-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: movsaude-wheel 0.55s linear infinite;
+}
+
+.mov-headlight {
+  animation: movsaude-headlight 1s ease-in-out infinite;
+}
+
+.mov-ping {
+  animation: movsaude-ping 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mov-bus {
+    animation: none !important;
+    left: 28% !important;
+  }
+  .mov-road-dashes,
+  .mov-wheel,
+  .mov-headlight,
+  .mov-ping {
+    animation: none !important;
+  }
+}
+
