@@ -1,15 +1,21 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+/** Valores públicos do projeto (RLS protege os dados). Fallback evita tela branca se a Vercel não tiver env. */
+const FALLBACK_URL = 'https://ielylrtjiusrrmdlozli.supabase.co'
+const FALLBACK_ANON =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImllbHlscnRqaXVzcnJtZGxvemxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMDQ3ODYsImV4cCI6MjEwMTY4MDc4Nn0.CACks9LVoOVXkMawszSCsSlXXX_J13Oh5CAGH-wyNJM'
 
-if (!url || !anonKey) {
+const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || FALLBACK_URL
+const anonKey =
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || FALLBACK_ANON
+
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
   console.warn(
-    '[supabase] Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no .env.local',
+    '[supabase] Usando fallback público do projeto. Preferível definir VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY na Vercel.',
   )
 }
 
-export const supabase = createClient(url ?? '', anonKey ?? '')
+export const supabase: SupabaseClient = createClient(url, anonKey)
 
 export type ContactInsert = {
   nome: string
@@ -31,9 +37,7 @@ export type JobApplicationInsert = {
   cidade: string
   vaga: string
   vaga_outra?: string | null
-  /** Nome original do arquivo (display) */
   curriculo_nome?: string | null
-  /** Path/id do objeto no bucket Storage `curriculos` — o binário NÃO fica na tabela */
   curriculo_path?: string | null
   mensagem?: string | null
   consent: boolean
