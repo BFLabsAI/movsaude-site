@@ -2,6 +2,6 @@
 url = "https://mcp.supabase.com/mcp?project_ref=ielylrtjiusrrmdlozli&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
 enabled = true
 
-# Defina SUPABASE_ACCESS_TOKEN no ambiente (não commitar o PAT)
+# Token local: export SUPABASE_ACCESS_TOKEN=sbp_... (não versionar o PAT — GitHub push protection bloqueia)
 [mcp_servers.supabase.headers]
 Authorization = "Bearer ${SUPABASE_ACCESS_TOKEN}"
