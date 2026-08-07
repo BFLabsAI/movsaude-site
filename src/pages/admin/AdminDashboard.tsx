@@ -30,11 +30,11 @@ export function AdminDashboard() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-display font-extrabold text-[28px] text-navy m-0 tracking-tight">
+      <div className="mb-5 sm:mb-8">
+        <h1 className="font-display font-extrabold text-[24px] sm:text-[28px] text-navy m-0 tracking-tight">
           Dashboard
         </h1>
-        <p className="text-muted m-0 mt-1 text-[15px]">
+        <p className="text-muted m-0 mt-1 text-[14px] sm:text-[15px]">
           Visão rápida de contatos e candidaturas.
         </p>
       </div>
@@ -47,24 +47,24 @@ export function AdminDashboard() {
       )}
 
       {stats && (
-        <div className="space-y-10">
+        <div className="space-y-8 sm:space-y-10">
           <section>
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="font-display font-bold text-lg text-navy m-0">Contatos</h2>
+            <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
+              <h2 className="font-display font-bold text-base sm:text-lg text-navy m-0">Contatos</h2>
               <Link
                 to="/painel/contatos"
-                className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-blue hover:underline"
+                className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-blue min-h-[44px] min-w-[44px] justify-end"
               >
-                Abrir CRM
+                CRM
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               <StatCard label="Total" value={stats.contatos.total} tone="navy" />
               <StatCard
                 label="Em andamento"
                 value={stats.contatos.em_andamento}
-                hint="Novo + em contato + negociação"
+                hint="Novo + contato + negociação"
                 tone="amber"
               />
               <StatCard label="Ganhos" value={stats.contatos.ganho} tone="green" />
@@ -73,17 +73,17 @@ export function AdminDashboard() {
           </section>
 
           <section>
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="font-display font-bold text-lg text-navy m-0">Candidatos</h2>
+            <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
+              <h2 className="font-display font-bold text-base sm:text-lg text-navy m-0">Candidatos</h2>
               <Link
                 to="/painel/candidatos"
-                className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-blue hover:underline"
+                className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-blue min-h-[44px] min-w-[44px] justify-end"
               >
-                Abrir pipeline
+                Pipeline
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               <StatCard label="Currículos" value={stats.candidaturas.total} tone="navy" />
               <StatCard
                 label="Em processo"

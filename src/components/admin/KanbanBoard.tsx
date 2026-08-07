@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -47,18 +47,26 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
+      data-col-id={id}
       className={cn(
-        'w-[280px] shrink-0 rounded-2xl border flex flex-col max-h-[calc(100dvh-200px)] transition-colors',
+        // mobile: quase full width + snap; desktop: largura fixa
+        'snap-center shrink-0 rounded-2xl border flex flex-col transition-colors',
+        'w-[min(100%,calc(100vw-2rem))] sm:w-[300px] md:w-[280px]',
+        'max-h-[min(70dvh,calc(100dvh-14rem))] md:max-h-[calc(100dvh-12rem)]',
         isOver ? 'bg-brand-blue/10 border-brand-blue/40' : 'bg-soft border-line',
       )}
     >
       <div className="px-3.5 py-3 border-b border-line flex items-center justify-between gap-2 sticky top-0 bg-inherit rounded-t-2xl z-10">
-        <h2 className="font-display font-bold text-[14px] text-navy m-0">{label}</h2>
-        <span className="text-[12px] font-bold text-muted bg-white rounded-full px-2 py-0.5 border border-line">
+        <h2 className="font-display font-bold text-[13px] sm:text-[14px] text-navy m-0 leading-tight">
+          {label}
+        </h2>
+        <span className="text-[12px] font-bold text-muted bg-white rounded-full px-2 py-0.5 border border-line shrink-0">
           {count}
         </span>
       </div>
-      <div className="flex-1 overflow-y-auto p-2.5 space-y-2 min-h-[120px]">{children}</div>
+      <div className="flex-1 overflow-y-auto overscroll-contain p-2.5 space-y-2 min-h-[100px]">
+        {children}
+      </div>
     </div>
   )
 }
@@ -87,7 +95,6 @@ function DraggableCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'touch-none',
         isDragging && 'opacity-40',
         disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
       )}
@@ -110,14 +117,15 @@ export function KanbanBoard<T extends { id: string; status: string }>({
 }: KanbanBoardProps<T>) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overColumnId, setOverColumnId] = useState<string | null>(null)
+  const [activeCol, setActiveCol] = useState(columns[0]?.id ?? '')
+  const scrollerRef = useRef<HTMLDivElement>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // evita conflito com clique para abrir detalhe
-      activationConstraint: { distance: 8 },
+      activationConstraint: { distance: 10 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 180, tolerance: 6 },
+      activationConstraint: { delay: 220, tolerance: 8 },
     }),
   )
 
@@ -141,6 +149,38 @@ export function KanbanBoard<T extends { id: string; status: string }>({
     if (item) return getStatus(item)
     return null
   }
+
+  function scrollToColumn(colId: string) {
+    setActiveCol(colId)
+    const root = scrollerRef.current
+    if (!root) return
+    const el = root.querySelector(`[data-col-id="${colId}"]`) as HTMLElement | null
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    }
+  }
+
+  // sync pill com scroll horizontal
+  useEffect(() => {
+    const root = scrollerRef.current
+    if (!root) return
+    const onScroll = () => {
+      const center = root.scrollLeft + root.clientWidth / 2
+      let bestId = columns[0]?.id ?? ''
+      let bestDist = Infinity
+      root.querySelectorAll<HTMLElement>('[data-col-id]').forEach((el) => {
+        const mid = el.offsetLeft + el.offsetWidth / 2
+        const d = Math.abs(mid - center)
+        if (d < bestDist) {
+          bestDist = d
+          bestId = el.dataset.colId ?? bestId
+        }
+      })
+      setActiveCol(bestId)
+    }
+    root.addEventListener('scroll', onScroll, { passive: true })
+    return () => root.removeEventListener('scroll', onScroll)
+  }, [columns])
 
   function onDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id))
@@ -180,7 +220,52 @@ export function KanbanBoard<T extends { id: string; status: string }>({
       onDragEnd={(e) => void onDragEnd(e)}
       onDragCancel={onDragCancel}
     >
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1">
+      {/* Pills de etapa — mobile first */}
+      <div className="mb-3 -mx-1 px-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {columns.map((col) => {
+            const count = byStatus[col.id]?.length ?? 0
+            const on = activeCol === col.id
+            return (
+              <button
+                key={col.id}
+                type="button"
+                onClick={() => scrollToColumn(col.id)}
+                className={cn(
+                  'shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold border cursor-pointer transition-colors min-h-[40px]',
+                  on
+                    ? 'bg-navy text-white border-navy'
+                    : 'bg-white text-navy/80 border-line hover:border-navy/20',
+                )}
+              >
+                <span className="max-w-[9.5rem] truncate">{col.label}</span>
+                <span
+                  className={cn(
+                    'rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums',
+                    on ? 'bg-white/20 text-white' : 'bg-soft text-muted',
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[11px] text-muted m-0 mt-2 md:hidden">
+          Deslize as colunas · segure o card para arrastar · toque para abrir
+        </p>
+      </div>
+
+      <div
+        ref={scrollerRef}
+        className={cn(
+          'flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 sm:-mx-1 sm:px-1',
+          'snap-x snap-mandatory md:snap-none',
+          'scroll-px-4 sm:scroll-px-0',
+          // esconde scrollbar feia no mobile
+          '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:block',
+        )}
+      >
         {columns.map((col) => (
           <DroppableColumn
             key={col.id}
@@ -190,8 +275,8 @@ export function KanbanBoard<T extends { id: string; status: string }>({
             isOver={overColumnId === col.id}
           >
             {(byStatus[col.id]?.length ?? 0) === 0 && (
-              <p className="text-[12px] text-muted text-center py-6 m-0 pointer-events-none">
-                Arraste cards para cá
+              <p className="text-[12px] text-muted text-center py-8 m-0 pointer-events-none">
+                Nenhum item nesta etapa
               </p>
             )}
             {byStatus[col.id]?.map((item) => (
@@ -208,7 +293,7 @@ export function KanbanBoard<T extends { id: string; status: string }>({
                       onOpen(item)
                     }
                   }}
-                  className="w-full text-left rounded-xl bg-white border border-line p-3 shadow-sm hover:border-navy/20 hover:shadow-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/30"
+                  className="w-full text-left rounded-xl bg-white border border-line p-3.5 shadow-sm hover:border-navy/20 hover:shadow-md transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/30 active:scale-[0.99]"
                 >
                   {renderCard(item, { isDragging: activeId === item.id })}
                 </div>
@@ -220,7 +305,7 @@ export function KanbanBoard<T extends { id: string; status: string }>({
 
       <DragOverlay dropAnimation={null}>
         {activeItem ? (
-          <div className="w-[260px] rounded-xl bg-white border border-brand-blue/30 p-3 shadow-xl ring-2 ring-brand-blue/20 cursor-grabbing">
+          <div className="w-[min(280px,80vw)] rounded-xl bg-white border border-brand-blue/30 p-3.5 shadow-xl ring-2 ring-brand-blue/20 cursor-grabbing">
             {renderCard(activeItem, { isDragging: true })}
           </div>
         ) : null}

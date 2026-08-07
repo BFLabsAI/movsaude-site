@@ -19,12 +19,14 @@ export function StatCard({
     amber: 'border-amber-200 bg-amber-50',
   }
   return (
-    <div className={cn('rounded-2xl border p-5 shadow-sm', tones[tone])}>
-      <p className="text-[12px] font-bold tracking-[0.08em] uppercase text-muted m-0 mb-2">
+    <div className={cn('rounded-2xl border p-4 sm:p-5 shadow-sm', tones[tone])}>
+      <p className="text-[11px] sm:text-[12px] font-bold tracking-[0.08em] uppercase text-muted m-0 mb-1.5 sm:mb-2 leading-snug">
         {label}
       </p>
-      <p className="font-display font-extrabold text-[32px] leading-none text-navy m-0">{value}</p>
-      {hint && <p className="text-[12px] text-muted m-0 mt-2">{hint}</p>}
+      <p className="font-display font-extrabold text-[28px] sm:text-[32px] leading-none text-navy m-0 tabular-nums">
+        {value}
+      </p>
+      {hint && <p className="text-[11px] sm:text-[12px] text-muted m-0 mt-1.5 sm:mt-2 leading-snug">{hint}</p>}
     </div>
   )
 }

@@ -88,19 +88,19 @@ export function AdminCandidatos() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display font-extrabold text-[28px] text-navy m-0 tracking-tight">
+      <div className="mb-4 sm:mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display font-extrabold text-[24px] sm:text-[28px] text-navy m-0 tracking-tight">
             Candidatos
           </h1>
-          <p className="text-muted m-0 mt-1 text-[15px]">
-            Pipeline de RH — arraste os cards entre as etapas ou use o seletor no detalhe.
+          <p className="text-muted m-0 mt-1 text-[13px] sm:text-[15px] leading-snug">
+            Arraste cards entre etapas · toque para detalhes
           </p>
         </div>
         <button
           type="button"
           onClick={load}
-          className="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-semibold text-navy cursor-pointer hover:bg-soft"
+          className="rounded-full border border-line bg-white px-4 py-2.5 text-[13px] font-semibold text-navy cursor-pointer hover:bg-soft min-h-[44px]"
         >
           Atualizar
         </button>
