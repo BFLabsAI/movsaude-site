@@ -22,6 +22,7 @@ npm run preview
 - `/quem-somos`
 - `/projetos`
 - `/projetos/:slug`
+- `/trabalhe-conosco`
 - `/contato`
 
 ## Deploy

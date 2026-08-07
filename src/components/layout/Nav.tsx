@@ -11,6 +11,7 @@ const links = [
   { to: '/', label: 'Início' },
   { to: '/quem-somos', label: 'Quem Somos' },
   { to: '/projetos', label: 'Projetos', hasDropdown: true },
+  { to: '/trabalhe-conosco', label: 'Trabalhe Conosco' },
   { to: '/contato', label: 'Contato' },
 ]
 

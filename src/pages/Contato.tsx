@@ -1,18 +1,25 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
-import { CheckCircle2, Mail, MessageCircle, ArrowRight, MapPin, ShieldCheck } from 'lucide-react'
+import { useSearchParams, Link, useLocation } from 'react-router-dom'
+import { Mail, MessageCircle, ArrowRight, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
 import { projects, ufs } from '@/data/projects'
+import { siteContact } from '@/data/contact'
 import { Reveal } from '@/components/Reveal'
 import { Button } from '@/components/ui/Button'
+import { FormSuccess } from '@/components/FormSuccess'
 import { RoadCurve } from '@/components/DrawnElements'
 import { ProjectIcon } from '@/components/icons/ProjectIcons'
 import { cn } from '@/lib/utils'
 import type { ProjectId } from '@/data/projects'
+import { buildSourceFromUrl } from '@/lib/source'
+import { supabase } from '@/lib/supabase'
 
 export function Contato() {
   const [params] = useSearchParams()
+  const location = useLocation()
   const pre = params.get('projeto')
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [selected, setSelected] = useState<string[]>(() =>
     pre && projects.some((p) => p.slug === pre) ? [pre] : [],
   )
@@ -33,8 +40,33 @@ export function Contato() {
     })
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setSubmitError(null)
+    setSubmitting(true)
+
+    const fd = new FormData(e.currentTarget)
+    const source = buildSourceFromUrl(params, location.pathname)
+
+    const { error } = await supabase.from('contatos').insert({
+      nome: String(fd.get('nome') ?? '').trim(),
+      cargo: String(fd.get('cargo') ?? '').trim() || null,
+      municipio: String(fd.get('municipio') ?? '').trim(),
+      uf: String(fd.get('uf') ?? '').trim(),
+      email: String(fd.get('email') ?? '').trim(),
+      telefone: String(fd.get('whatsapp') ?? '').trim(),
+      projetos: selected,
+      mensagem: String(fd.get('msg') ?? '').trim() || null,
+      consent: true,
+      source,
+    })
+
+    setSubmitting(false)
+    if (error) {
+      console.error('[contato]', error)
+      setSubmitError('Não foi possível enviar. Tente novamente em instantes.')
+      return
+    }
     setSent(true)
   }
 
@@ -89,24 +121,31 @@ export function Contato() {
             <Reveal>
               <div className="rounded-[28px] bg-white border border-line shadow-[0_24px_70px_rgba(14,26,51,0.1)] p-6 sm:p-8 md:p-10">
                 {sent ? (
-                  <div className="py-12 text-center max-w-md mx-auto">
-                    <div className="w-16 h-16 rounded-full bg-brand-green/15 flex items-center justify-center mx-auto mb-5">
-                      <CheckCircle2 className="w-9 h-9 text-brand-green" />
-                    </div>
-                    <h2 className="font-display font-extrabold text-2xl text-navy m-0 mb-3">
-                      Solicitação enviada com sucesso
-                    </h2>
-                    <p className="text-muted m-0 leading-relaxed mb-6">
-                      Nossa equipe entrará em contato em breve com a apresentação institucional da
-                      MovSaúde. Obrigado pelo interesse em levar mais saúde ao seu município.
-                    </p>
-                    <Button asChild variant="outline">
-                      <Link to="/">
-                        Voltar ao início
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  </div>
+                  <FormSuccess
+                    badge="Solicitação recebida"
+                    title="Recebemos o seu contato"
+                    lead="Obrigado pelo interesse em levar mais saúde ao seu município. Nossa equipe já registrou a solicitação e retorna com a apresentação institucional da MovSaúde."
+                    icon={Sparkles}
+                    steps={[
+                      {
+                        title: 'Pedido na fila certa',
+                        description:
+                          'Sua mensagem entrou no canal institucional — sem spam comercial.',
+                      },
+                      {
+                        title: 'Análise do contexto',
+                        description:
+                          'Olhamos município, projetos de interesse e o que você contou na mensagem.',
+                      },
+                      {
+                        title: 'Retorno em breve',
+                        description:
+                          'Entraremos em contato pelo e-mail ou WhatsApp informados com os próximos passos.',
+                      },
+                    ]}
+                    primaryCta={{ to: '/projetos', label: 'Conhecer os projetos' }}
+                    secondaryCta={{ to: '/', label: 'Ir para o início' }}
+                  />
                 ) : (
                   <form onSubmit={onSubmit} className="space-y-5">
                     <div className="pb-2 border-b border-line mb-1">
@@ -252,8 +291,19 @@ export function Contato() {
                       </span>
                     </label>
 
-                    <Button type="submit" size="lg" className="w-full sm:w-auto min-w-[220px]">
-                      Enviar solicitação
+                    {submitError && (
+                      <p className="text-sm text-red-600 m-0" role="alert">
+                        {submitError}
+                      </p>
+                    )}
+
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full sm:w-auto min-w-[220px]"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Enviando…' : 'Enviar solicitação'}
                       <ArrowRight className="w-4 h-4" />
                     </Button>
                   </form>
@@ -273,7 +323,7 @@ export function Contato() {
                   <ul className="space-y-3 m-0 p-0 list-none relative">
                     <li>
                       <a
-                        href="https://instagram.com/movsaudeoficial"
+                        href={siteContact.instagram.url}
                         target="_blank"
                         rel="noreferrer"
                         className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 text-white/90 hover:bg-white/10 transition-colors"
@@ -287,27 +337,65 @@ export function Contato() {
                         </span>
                         <span>
                           <span className="block text-[13px] font-bold">Instagram</span>
-                          <span className="block text-[12px] text-white/55">@movsaudeoficial</span>
+                          <span className="block text-[12px] text-white/55">
+                            {siteContact.instagram.label}
+                          </span>
                         </span>
                       </a>
                     </li>
-                    <li className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 text-white/60">
-                      <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                        <Mail size={18} />
-                      </span>
-                      <span>
-                        <span className="block text-[13px] font-bold text-white/80">E-mail</span>
-                        <span className="block text-[12px] text-white/45">Em definição</span>
-                      </span>
+                    <li>
+                      <a
+                        href={siteContact.tiktok.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 text-white/90 hover:bg-white/10 transition-colors"
+                      >
+                        <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.3 6.34 6.34 0 0 0 9.49 21.64a6.34 6.34 0 0 0 6.34-6.34V8.77a8.2 8.2 0 0 0 4.76 1.52V6.86a4.85 4.85 0 0 1-1-.17Z" />
+                          </svg>
+                        </span>
+                        <span>
+                          <span className="block text-[13px] font-bold">TikTok</span>
+                          <span className="block text-[12px] text-white/55">
+                            {siteContact.tiktok.label}
+                          </span>
+                        </span>
+                      </a>
                     </li>
-                    <li className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 text-white/60">
-                      <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                        <MessageCircle size={18} />
-                      </span>
-                      <span>
-                        <span className="block text-[13px] font-bold text-white/80">WhatsApp</span>
-                        <span className="block text-[12px] text-white/45">Em definição</span>
-                      </span>
+                    <li>
+                      <a
+                        href={siteContact.email.url}
+                        className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 text-white/90 hover:bg-white/10 transition-colors"
+                      >
+                        <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                          <Mail size={18} />
+                        </span>
+                        <span>
+                          <span className="block text-[13px] font-bold">E-mail</span>
+                          <span className="block text-[12px] text-white/55">
+                            {siteContact.email.address}
+                          </span>
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href={siteContact.phone.whatsappUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 text-white/90 hover:bg-white/10 transition-colors"
+                      >
+                        <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                          <MessageCircle size={18} />
+                        </span>
+                        <span>
+                          <span className="block text-[13px] font-bold">WhatsApp</span>
+                          <span className="block text-[12px] text-white/55">
+                            {siteContact.phone.display}
+                          </span>
+                        </span>
+                      </a>
                     </li>
                   </ul>
                   <div className="mt-7 pt-5 border-t border-white/10 relative">

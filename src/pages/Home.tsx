@@ -1,6 +1,5 @@
-import { useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowUpRight, MapPin, Play } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, MapPin } from 'lucide-react'
 import { projects } from '@/data/projects'
 import { cityUnits, metrics } from '@/data/locations'
 import { Reveal } from '@/components/Reveal'
@@ -10,6 +9,7 @@ import { HeroSlider } from '@/components/HeroSlider'
 import { ProjectIcon } from '@/components/icons/ProjectIcons'
 import { MobilityBand } from '@/components/MobilityBand'
 import { PartnershipCycle } from '@/components/PartnershipCycle'
+import { VideoCarousel } from '@/components/VideoCarousel'
 import { Button } from '@/components/ui/Button'
 
 const principles = [
@@ -39,16 +39,6 @@ const med = projects[0]
 const others = projects.slice(1)
 
 export function Home() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  function playVideo() {
-    const el = videoRef.current
-    if (!el) return
-    void el.play().catch(() => {
-      // se o browser bloquear autoplay, o usuário ainda tem os controls
-    })
-  }
-
   return (
     <div className="overflow-x-hidden bg-white">
       {/* ═══ HERO ═══ */}
@@ -277,56 +267,36 @@ export function Home() {
       </section>
 
       {/* ═══ VÍDEO institucional ═══ */}
-      <section className="bg-navy text-white">
-        <div className="max-w-[1000px] mx-auto px-5 sm:px-8 py-14 md:py-16">
+      <section className="bg-navy text-white" id="video-movsaude">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-14 md:py-20">
           <Reveal>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-10">
-              <div className="flex-1 max-w-md text-center md:text-left">
-                <p className="text-[12px] font-bold tracking-[0.16em] uppercase text-brand-green m-0 mb-3">
-                  Por dentro
-                </p>
-                <h2 className="font-display font-extrabold text-[30px] md:text-[38px] leading-[1.08] m-0 mb-4 tracking-tight">
-                  Veja a saúde móvel em movimento
-                </h2>
-                <p className="text-[16px] md:text-[17px] text-white/65 m-0 mb-5 leading-relaxed">
-                  Estrutura, equipes em campo e o impacto real do atendimento nas cidades onde já
-                  operamos.
-                </p>
-                <ul className="m-0 p-0 list-none flex flex-col gap-2.5 mb-7 text-[15px] text-white/80 items-center md:items-start">
-                  <li className="flex gap-2"><span className="text-brand-blue-soft">→</span> Unidades em contexto real</li>
-                  <li className="flex gap-2"><span className="text-brand-blue-soft">→</span> Equipes e acolhimento</li>
-                  <li className="flex gap-2"><span className="text-brand-blue-soft">→</span> Gestores e população</li>
-                </ul>
-                <button
-                  type="button"
-                  onClick={playVideo}
-                  className="inline-flex items-center gap-2 h-12 px-6 rounded-full bg-white text-navy font-bold text-[14px] cursor-pointer border-0"
-                >
-                  <Play className="w-4 h-4 fill-navy" />
-                  Assistir vídeo
-                </button>
-              </div>
-
-              {/* player vertical / adaptável */}
-              <div
-                id="video-movsaude"
-                className="w-full max-w-[280px] sm:max-w-[300px] rounded-[28px] bg-navy-deep p-1.5 shadow-2xl ring-1 ring-white/10 shrink-0 overflow-hidden"
-              >
-                <div className="relative w-full rounded-[22px] overflow-hidden bg-black aspect-[9/16]">
-                  <video
-                    ref={videoRef}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    controls
-                    playsInline
-                    preload="metadata"
-                    poster="/video-thumb.png"
-                  >
-                    <source src="/videos/mov-saude.mp4" type="video/mp4" />
-                    Seu navegador não suporta vídeo HTML5.
-                  </video>
-                </div>
-              </div>
+            <div className="text-center max-w-xl mx-auto mb-10 md:mb-12">
+              <p className="text-[12px] font-bold tracking-[0.16em] uppercase text-brand-green m-0 mb-3">
+                Por dentro
+              </p>
+              <h2 className="font-display font-extrabold text-[30px] md:text-[40px] leading-[1.08] m-0 mb-4 tracking-tight">
+                Veja a saúde móvel em movimento
+              </h2>
+              <p className="text-[16px] md:text-[17px] text-white/65 m-0 mb-6 leading-relaxed">
+                Estrutura, equipes em campo e o impacto real do atendimento nas cidades onde já
+                operamos.
+              </p>
+              <ul className="m-0 p-0 list-none flex flex-col sm:flex-row sm:flex-wrap gap-2.5 sm:gap-x-6 sm:gap-y-2 justify-center text-[15px] text-white/80">
+                <li className="flex gap-2 justify-center">
+                  <span className="text-brand-blue-soft">→</span> Unidades em contexto real
+                </li>
+                <li className="flex gap-2 justify-center">
+                  <span className="text-brand-blue-soft">→</span> Equipes e acolhimento
+                </li>
+                <li className="flex gap-2 justify-center">
+                  <span className="text-brand-blue-soft">→</span> Gestores e população
+                </li>
+              </ul>
             </div>
+          </Reveal>
+
+          <Reveal delay={0.06}>
+            <VideoCarousel />
           </Reveal>
         </div>
       </section>
