@@ -49,10 +49,10 @@ function DroppableColumn({
       ref={setNodeRef}
       data-col-id={id}
       className={cn(
-        // mobile: quase full width + snap; desktop: largura fixa
+        // mobile: coluna com margem lateral; desktop: largura fixa
         'snap-center shrink-0 rounded-2xl border flex flex-col transition-colors',
-        'w-[min(100%,calc(100vw-2rem))] sm:w-[300px] md:w-[280px]',
-        'max-h-[min(70dvh,calc(100dvh-14rem))] md:max-h-[calc(100dvh-12rem)]',
+        'w-[min(100%,calc(100vw-2.75rem))] sm:w-[300px] md:w-[280px]',
+        'max-h-[min(62dvh,calc(100dvh-16rem))] md:max-h-[calc(100dvh-12rem)]',
         isOver ? 'bg-brand-blue/10 border-brand-blue/40' : 'bg-soft border-line',
       )}
     >
@@ -221,8 +221,8 @@ export function KanbanBoard<T extends { id: string; status: string }>({
       onDragCancel={onDragCancel}
     >
       {/* Pills de etapa — mobile first */}
-      <div className="mb-3 -mx-1 px-1">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="mb-3">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-0.5 px-0.5">
           {columns.map((col) => {
             const count = byStatus[col.id]?.length ?? 0
             const on = activeCol === col.id
@@ -259,10 +259,10 @@ export function KanbanBoard<T extends { id: string; status: string }>({
       <div
         ref={scrollerRef}
         className={cn(
-          'flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 sm:-mx-1 sm:px-1',
+          // sem -mx: respeita a margem do shell (não estoura a borda)
+          'flex gap-3 overflow-x-auto pb-2',
           'snap-x snap-mandatory md:snap-none',
-          'scroll-px-4 sm:scroll-px-0',
-          // esconde scrollbar feia no mobile
+          'scroll-pl-0 scroll-pr-0',
           '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:block',
         )}
       >
