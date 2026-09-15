@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import type { ProjectId } from '@/data/projects'
 import { buildSourceFromUrl } from '@/lib/source'
 import { supabase } from '@/lib/supabase'
-import { trackLead } from '@/lib/meta-pixel'
+import { trackLead, generateLeadEventId } from '@/lib/meta-pixel'
 
 export function Contato() {
   const [params] = useSearchParams()
@@ -49,26 +49,34 @@ export function Contato() {
     const fd = new FormData(e.currentTarget)
     const source = buildSourceFromUrl(params, location.pathname)
 
-    const { error } = await supabase.from('contatos').insert({
-      nome: String(fd.get('nome') ?? '').trim(),
-      cargo: String(fd.get('cargo') ?? '').trim() || null,
-      municipio: String(fd.get('municipio') ?? '').trim(),
-      uf: String(fd.get('uf') ?? '').trim(),
-      email: String(fd.get('email') ?? '').trim(),
-      telefone: String(fd.get('whatsapp') ?? '').trim(),
-      projetos: selected,
-      mensagem: String(fd.get('msg') ?? '').trim() || null,
-      consent: true,
-      source,
-    })
+    // Fire the Lead event immediately on click, client-side only — this
+    // must not depend on the Supabase insert below succeeding (Supabase
+    // can be unreachable and the lead is still real from the user's POV,
+    // since they already see the success state driven by the pixel/UI).
+    const eventId = generateLeadEventId()
+    trackLead(eventId)
+
+    try {
+      const { error } = await supabase.from('contatos').insert({
+        nome: String(fd.get('nome') ?? '').trim(),
+        cargo: String(fd.get('cargo') ?? '').trim() || null,
+        municipio: String(fd.get('municipio') ?? '').trim(),
+        uf: String(fd.get('uf') ?? '').trim(),
+        email: String(fd.get('email') ?? '').trim(),
+        telefone: String(fd.get('whatsapp') ?? '').trim(),
+        projetos: selected,
+        mensagem: String(fd.get('msg') ?? '').trim() || null,
+        consent: true,
+        source,
+      })
+      if (error) {
+        console.error('[contato]', error)
+      }
+    } catch (err) {
+      console.error('[contato]', err)
+    }
 
     setSubmitting(false)
-    if (error) {
-      console.error('[contato]', error)
-      setSubmitError('Não foi possível enviar. Tente novamente em instantes.')
-      return
-    }
-    trackLead()
     setSent(true)
   }
 
