@@ -1,0 +1,32 @@
+name: Supabase keepalive
+
+# O projeto Supabase gratuito pausa automaticamente após ~7 dias sem atividade.
+# Esta Action faz um SELECT leve e read-only na tabela `contatos` uma vez por mês
+# apenas para gerar atividade no banco e evitar a pausa — não insere nem altera dados.
+#
+# Requer 2 secrets configurados manualmente em Settings > Secrets and variables >
+# Actions deste repositório antes do primeiro run agendado:
+#   SUPABASE_URL        -> URL do projeto Supabase (ex: https://<ref>.supabase.co)
+#   SUPABASE_ANON_KEY    -> anon key pública do projeto (a mesma já exposta no
+#                            bundle JS do site para o browser, ver src/lib/supabase.ts)
+
+on:
+  schedule:
+    # Dia 1 de cada mês, 06:00 UTC
+    - cron: '0 6 1 * *'
+  workflow_dispatch: {}
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - name: SELECT read-only em `contatos` para manter o projeto ativo
+        run: |
+          set -e
+          curl -sS -f \
+            "${SUPABASE_URL}/rest/v1/contatos?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}"
