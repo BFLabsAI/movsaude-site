@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import type { ProjectId } from '@/data/projects'
 import { buildSourceFromUrl } from '@/lib/source'
 import { supabase } from '@/lib/supabase'
+import { trackLead } from '@/lib/meta-pixel'
 
 export function Contato() {
   const [params] = useSearchParams()
@@ -67,6 +68,7 @@ export function Contato() {
       setSubmitError('Não foi possível enviar. Tente novamente em instantes.')
       return
     }
+    trackLead()
     setSent(true)
   }
 
